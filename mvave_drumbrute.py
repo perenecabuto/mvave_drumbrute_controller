@@ -1,7 +1,6 @@
 import os
 import logging
 import multiprocessing
-import signal
 import time
 
 from simple_term_menu import TerminalMenu
@@ -10,8 +9,10 @@ import rtmidi
 
 from state_store import StateStore
 from midi_clock import MidiClock
-from midi_listener import MidiInListener
+from midi_listener import MidiInListener, \
+    PEDAL_BUTTON_A_PRESS, PEDAL_BUTTON_A_RELEASE, PEDAL_BUTTON_B_PRESS, PEDAL_BUTTON_C_RELEASE
 from controller import DrumbruteController
+from actions import BehaviorController
 
 
 DEFAULT_DB_FILE_PATH = 'mvave_drumbrute_state.db'
@@ -56,24 +57,32 @@ def main(
         state_store.pattern + 1, state_store.bpm
     )
 
-    drumbrute = DrumbruteController(
-        state=state_store,
+    clock = MidiClock()
+    clock.set_bpm(state_store.bpm)
+    drumbrute = DrumbruteController()
+    # drumbrute.change_pattern(midi_out, state_store.pattern)
+
+    actions = BehaviorController(
+        drumbrute,
+        state_store,
+        clock,
+        max_bpm=300,
     )
 
-    listener = MidiInListener()
+    listener = MidiInListener(change_mode_threshold=3)
     # listener.on_event(lambda *args: logging.info(str(list(sqlitedict.SqliteDict(db_file_path).items()))))
-    listener.add_behaviour((185, 0), lambda *args: None)
-    listener.add_behaviour((201, 0), drumbrute.toggle_play_behaviour)
-    listener.add_behaviour((193, 1), drumbrute.previous_pattern_behaviour)
-    listener.add_behaviour((153, 42), drumbrute.next_pattern_behaviour)
-    listener.add_behaviour((153, 49), drumbrute.change_mode_behaviour)
-
-    midi_clock = MidiClock(get_bpm_fn=lambda: state_store.bpm)
+    listener.add_play_behaviour(PEDAL_BUTTON_A_RELEASE, actions.null_behaviour)
+    listener.add_play_behaviour(PEDAL_BUTTON_A_PRESS, actions.toggle_play_behaviour)
+    listener.add_play_behaviour(PEDAL_BUTTON_B_PRESS, actions.previous_pattern_behaviour)
+    listener.add_play_behaviour(PEDAL_BUTTON_C_RELEASE, actions.next_pattern_behaviour)
+    #
+    listener.add_bpm_behaviour(PEDAL_BUTTON_A_PRESS, actions.increase_bpm_behaviour)
+    listener.add_bpm_behaviour(PEDAL_BUTTON_B_PRESS, actions.decrease_bpm_behaviour)
 
     stop_event = multiprocessing.Event()
 
     clock_watcher = multiprocessing.Process(
-        target=midi_clock.run,
+        target=clock.run,
         args=(stop_event, midi_out, output_port))
     midi_watcher = multiprocessing.Process(
         target=listener.run,
@@ -100,4 +109,3 @@ def main(
 if __name__ == '__main__':
     logging.basicConfig(level=os.environ.get('LOG_LEVEL', 'INFO'))
     fire.Fire(main)
-

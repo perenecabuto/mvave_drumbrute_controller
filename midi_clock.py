@@ -1,3 +1,4 @@
+import multiprocessing
 import time
 
 
@@ -5,14 +6,16 @@ class MidiClock():
     CLOCK_TICK_CMD = 0xF8
     DEFAULT_BPM = 120
 
-    def __init__(self, get_bpm_fn=None):
-        self._get_bpm_fn = get_bpm_fn
+    def __init__(self):
+        self._bpm = multiprocessing.Value('i', self.DEFAULT_BPM)
 
     @property
     def bpm(self):
-        if self._get_bpm_fn:
-            return self._get_bpm_fn()
-        return self.DEFAULT_BPM
+        return self._bpm.value
+
+    def set_bpm(self, bpm):
+        with self._bpm.get_lock():
+            self._bpm.value = bpm
 
     def run(self, stop_event, midi_out, output_port):
         midi_out.open_port(output_port)

@@ -2,14 +2,42 @@ import time
 import logging
 
 
+PEDAL_BUTTON_A_PRESS = (201, 0)
+PEDAL_BUTTON_A_RELEASE = (185, 0)
+PEDAL_BUTTON_B_PRESS = (193, 1)
+PEDAL_BUTTON_C_PRESS = (153, 49)
+PEDAL_BUTTON_C_RELEASE = (153, 42)
+
+
 class MidiInListener():
 
-    def __init__(self):
-        self.behaviours = {}
+    def __init__(
+        self,
+        change_mode_threshold: int = 5,
+        change_mode_button: tuple = PEDAL_BUTTON_C_PRESS,
+    ):
+        self.change_mode_threshold = change_mode_threshold
+        self.change_mode_button = change_mode_button
+        self._play_behaviours = {}
+        self._bpm_behaviours = {}
         self._on_event = None
+        self._change_mode_start = None
 
-    def add_behaviour(self, in_code, callback):
-        self.behaviours[in_code] = callback
+    @property
+    def is_in_bpm_mode(self) -> bool:
+        if not self._change_mode_start:
+            return False
+        elapsed_time = time.time() - self._change_mode_start if self._change_mode_start else 0
+        return elapsed_time >= self.change_mode_threshold
+
+    def add_play_behaviour(self, in_code, callback):
+        if in_code == self.change_mode_button:
+            raise ValueError("Change mode button cannot be used for play behaviour")
+
+        self._play_behaviours[in_code] = callback
+
+    def add_bpm_behaviour(self, in_code, callback):
+        self._bpm_behaviours[in_code] = callback
 
     def on_event(self, callback):
         self._on_event = callback
@@ -19,9 +47,13 @@ class MidiInListener():
         midi_in.open_port(input_port)
         midi_out.open_port(output_port)
 
+        ignore_next = False
         last_message_time = time.time()
         while not stop_event.is_set():
             message = midi_in.get_message()
+            if ignore_next:
+                ignore_next = False
+                continue
             if message:
                 _time = time.time()
                 delta_seconds = round(_time - last_message_time)
@@ -41,11 +73,33 @@ class MidiInListener():
                         self._on_event(message)
 
                     map_key = (midi_msg_type, midi_msg_data)
-                    if map_key in self.behaviours:
-                        self.behaviours[map_key](midi_out, midi_msg, delta_seconds)
+                    if map_key == self.change_mode_button:
+                        if not self.is_in_bpm_mode:
+                            self.start_bpm_mode()
+                        else:
+                            self.set_play_mode()
+                            ignore_next = True
+                        continue
+
+                    if not self.is_in_bpm_mode:
+                        self.set_play_mode()
+
+                    behaviours = self._play_behaviours \
+                        if not self.is_in_bpm_mode else self._bpm_behaviours
+                    if map_key in behaviours:
+                        behaviours[map_key](midi_out, midi_msg, delta_seconds)
                     else:
-                        logging.warn('Nothing found for %s', midi_msg)
-                except Exception as e:
+                        logging.warning('Nothing found for %s', midi_msg)
+                except Exception:  # pylint: disable=broad-except
                     logging.error("Can't process message: %s", message, exc_info=True)
 
             time.sleep(0.001)
+
+    def start_bpm_mode(self):
+        logging.info("ACTIVATE BPM MODE %s", self.change_mode_threshold)
+        if not self._change_mode_start:
+            self._change_mode_start = time.time()
+
+    def set_play_mode(self):
+        logging.info("DEACTIVATE BPM MODE")
+        self._change_mode_start = None
