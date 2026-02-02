@@ -49,10 +49,14 @@ def main(
         output_port, available_outputs[output_port],
     )
 
-    manager = multiprocessing.Manager()
-    global_bpm = manager.Value('current_bpm', 120)
+    logging.info(
+        'LAST PATTERN:%d BPM:%d',
+        state_store.pattern + 1, state_store.bpm
+    )
 
-    drumbrute = DrumbruteController(change_bpm_callback=global_bpm.set)
+    drumbrute = DrumbruteController(
+        state=state_store,
+    )
 
     listener = MidiInListener()
     # listener.on_event(lambda *args: logging.info(str(list(sqlitedict.SqliteDict(db_file_path).items()))))
@@ -62,7 +66,7 @@ def main(
     listener.add_behaviour((153, 42), drumbrute.next_pattern_behaviour)
     listener.add_behaviour((153, 49), drumbrute.change_mode_behaviour)
 
-    midi_clock = MidiClock(get_bpm_fn=lambda: global_bpm.value)
+    midi_clock = MidiClock(get_bpm_fn=lambda: state_store.bpm)
 
     clock_watcher = multiprocessing.Process(
         target=midi_clock.run,
