@@ -13,6 +13,7 @@ class DrumbruteController():
         channel:int = 10,
         filter_play_event_fn=None,
         change_bpm_callback=None,
+        change_pattern_callback=None,
         bpm:int = 120,
         pattern_num:int = 0,
     ):
@@ -28,6 +29,10 @@ class DrumbruteController():
             if change_bpm_callback is not None \
             else lambda bpm: None
 
+        self.change_pattern_callback = change_pattern_callback \
+            if change_pattern_callback is not None \
+            else lambda pattern: None
+
         self.max_patterns = 16
         self.max_bpm = 300
         self.change_mode_threshold = 5
@@ -40,7 +45,7 @@ class DrumbruteController():
         cmd = self.PC + (self.channel - 1)
         midi_out.send_message([cmd, 0, pattern_num])
         self.current_pattern = pattern_num
-        logging.info('CHANGE PATTERN to %d', pattern_num + 1)
+        self.change_pattern_callback(pattern_num)
 
     def change_bpm(self, bpm):
         logging.info('CHANGE BPM to %d', self.current_bpm)
