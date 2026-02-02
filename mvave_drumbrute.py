@@ -59,6 +59,7 @@ def main(
     drumbrute = DrumbruteController(change_bpm_callback=global_bpm.set)
 
     listener = MidiInListener()
+    # listener.on_event(lambda *args: logging.info(str(list(sqlitedict.SqliteDict(db_file_path).items()))))
     listener.add_behaviour((185, 0), lambda *args: None)
     listener.add_behaviour((201, 0), drumbrute.toggle_play_behaviour)
     listener.add_behaviour((193, 1), drumbrute.previous_pattern_behaviour)

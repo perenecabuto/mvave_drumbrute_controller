@@ -6,9 +6,14 @@ class MidiInListener():
 
     def __init__(self):
         self.behaviours = {}
+        self._on_event = None
 
     def add_behaviour(self, in_code, callback):
         self.behaviours[in_code] = callback
+
+    def on_event(self, callback):
+        self._on_event = callback
+        return self
 
     def run(self, midi_in, input_port, midi_out, output_port):
         midi_in.open_port(input_port)
@@ -31,6 +36,9 @@ class MidiInListener():
                         "MIDI IN: type:%s, data:%s, key:%s, delta:{%f:0.000f}s",
                         midi_msg_type, midi_msg_data, midi_msg_key, delta_seconds,
                     )
+
+                    if self._on_event:
+                        self._on_event(message)
 
                     map_key = (midi_msg_type, midi_msg_data)
                     if map_key in self.behaviours:
