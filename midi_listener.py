@@ -33,14 +33,11 @@ class MidiInListener():
                     )
 
                     map_key = (midi_msg_type, midi_msg_data)
-                    if map_key not in self.behaviours:
-                        logging.warn(
-                            f'Nothing found for %s',
-                            [a for a in args if "MidiOut" not in a.__class__.__name__]
-                        )
-
-                    self.behaviours[map_key](midi_out, midi_msg, delta_seconds)
-                except ValueError as e:
+                    if map_key in self.behaviours:
+                        self.behaviours[map_key](midi_out, midi_msg, delta_seconds)
+                    else:
+                        logging.warn('Nothing found for %s', midi_msg)
+                except Exception as e:
                     logging.error("Can't process message: %s", message, exc_info=True)
 
             time.sleep(0.001)
