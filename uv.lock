@@ -115,6 +115,7 @@ dependencies = [
     { name = "fire" },
     { name = "python-rtmidi" },
     { name = "simple-term-menu" },
+    { name = "sqlitedict" },
 ]
 
 [package.dev-dependencies]
@@ -127,6 +128,7 @@ requires-dist = [
     { name = "fire", specifier = ">=0.7.1" },
     { name = "python-rtmidi", specifier = ">=1.5.8" },
     { name = "simple-term-menu", specifier = ">=1.6.6" },
+    { name = "sqlitedict", specifier = ">=2.1.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -206,6 +208,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/d8/80/f0f10b4045628645a
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9c/09/21d993e394c1fe5c44cd90453d88ed44932da8dfca006e424c072d77d29b/simple_term_menu-1.6.6-py3-none-any.whl", hash = "sha256:c2a869efa7a9f7e4a9c25858b42ca6974034951c137d5e281f5339b06ed8c9c2", size = 27600, upload-time = "2024-12-02T16:31:48.934Z" },
 ]
+
+[[package]]
+name = "sqlitedict"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/12/9a/7620d1e9dcb02839ed6d4b14064e609cdd7a8ae1e47289aa0456796dd9ca/sqlitedict-2.1.0.tar.gz", hash = "sha256:03d9cfb96d602996f1d4c2db2856f1224b96a9c431bdd16e78032a72940f9e8c", size = 21846, upload-time = "2022-12-03T13:39:13.102Z" }
 
 [[package]]
 name = "stack-data"

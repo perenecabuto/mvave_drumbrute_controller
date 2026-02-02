@@ -8,6 +8,7 @@ dependencies = [
     "fire>=0.7.1",
     "python-rtmidi>=1.5.8",
     "simple-term-menu>=1.6.6",
+    "sqlitedict>=2.1.0",
 ]
 
 [dependency-groups]
