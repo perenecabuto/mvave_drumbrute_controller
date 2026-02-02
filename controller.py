@@ -25,7 +25,6 @@ class DrumbruteController():
         self.max_bpm = 300
         self.change_mode_threshold = 5
 
-        self.playing = False
         self.change_mode_start = None
 
     @property
@@ -82,8 +81,8 @@ class DrumbruteController():
         if not self.filter_play_event_fn(midi_msg):
             return
 
-        self.playing = not(self.playing)
-        if self.playing:
+        self.state.set_playing(not (self.state.playing))
+        if self.state.playing:
             midi_out.send_message([self.START, 255, 255])
             logging.info(
                 'PLAY PATTERN:%d BPM:%d',

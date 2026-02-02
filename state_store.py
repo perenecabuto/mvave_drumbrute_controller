@@ -43,3 +43,9 @@ class StateStore():
     def bpm(self):
         return self.db.get(f'last_bpm_{self.pattern}', 120)
 
+    def set_playing(self, playing):
+        self.db['playing'] = playing
+
+    @property
+    def playing(self):
+        return self.db.get('playing', False)
