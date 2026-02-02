@@ -15,12 +15,12 @@ class MidiInListener():
         self._on_event = callback
         return self
 
-    def run(self, midi_in, input_port, midi_out, output_port):
+    def run(self, stop_event, midi_in, input_port, midi_out, output_port):
         midi_in.open_port(input_port)
         midi_out.open_port(output_port)
 
         last_message_time = time.time()
-        while True:
+        while not stop_event.is_set():
             message = midi_in.get_message()
             if message:
                 _time = time.time()
@@ -49,4 +49,3 @@ class MidiInListener():
                     logging.error("Can't process message: %s", message, exc_info=True)
 
             time.sleep(0.001)
-

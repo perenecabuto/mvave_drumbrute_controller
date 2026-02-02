@@ -1,6 +1,8 @@
 import os
 import logging
 import multiprocessing
+import signal
+import time
 
 from simple_term_menu import TerminalMenu
 import fire
@@ -68,20 +70,31 @@ def main(
 
     midi_clock = MidiClock(get_bpm_fn=lambda: state_store.bpm)
 
+    stop_event = multiprocessing.Event()
+
     clock_watcher = multiprocessing.Process(
         target=midi_clock.run,
-        args=(midi_out, output_port))
+        args=(stop_event, midi_out, output_port))
     midi_watcher = multiprocessing.Process(
         target=listener.run,
-        args=(midi_in, input_port, midi_out, output_port))
+        args=(stop_event, midi_in, input_port, midi_out, output_port))
 
     midi_watcher.start()
     logging.info("Starting MIDI listener...")
     clock_watcher.start()
     logging.info("Starting MIDI clock...")
 
-    while True:
-        pass
+    try:
+        while midi_watcher.is_alive() or clock_watcher.is_alive():
+            time.sleep(1)
+    except KeyboardInterrupt:
+        stop_event.set()
+        stop_event.set()
+        print("Main process: caught keyboard interrupt, terminating workers,")
+
+    midi_watcher.join()  # Wait for the worker process to finish
+    clock_watcher.join()  # Wait for the worker process to finish
+    logging.info("Main process: workers joined, exiting.")
 
 
 if __name__ == '__main__':

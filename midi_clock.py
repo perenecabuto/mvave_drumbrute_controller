@@ -14,10 +14,10 @@ class MidiClock():
             return self._get_bpm_fn()
         return self.DEFAULT_BPM
 
-    def run(self, midi_out, output_port):
+    def run(self, stop_event, midi_out, output_port):
         midi_out.open_port(output_port)
 
-        while True:
+        while not stop_event.is_set():
             bpm = self.bpm
             pulse_rate = 60.0 / (bpm * 24)
             midi_out.send_message([self.CLOCK_TICK_CMD, 255, 255])
@@ -27,4 +27,3 @@ class MidiClock():
             t2 = time.perf_counter()
             while (t2 - t1) < pulse_rate:
                 t2 = time.perf_counter()
-
