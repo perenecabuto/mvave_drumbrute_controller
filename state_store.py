@@ -4,12 +4,16 @@ import sqlitedict
 
 
 class StateStore():
+
     def __init__(self, db_file_path):
         self._db_file_path = db_file_path
+        self._db = None
 
     @property
     def db(self):
-        return sqlitedict.SqliteDict(self._db_file_path, autocommit=True)
+        if self._db is None or not self._db.conn.is_alive():
+            self._db = sqlitedict.SqliteDict(self._db_file_path, autocommit=True)
+        return self._db
 
     def set_input_port(self, input_port):
         self.db['input_port'] = input_port
