@@ -11,8 +11,8 @@ class MidiInListener():
         self.behaviours[in_code] = callback
 
     def run(self, midi_in, input_port, midi_out, output_port):
-        midi_out.open_port(output_port)
         midi_in.open_port(input_port)
+        midi_out.open_port(output_port)
 
         last_message_time = time.time()
         while True:
