@@ -45,8 +45,11 @@ class DrumbruteController():
 
     def change_bpm(self, bpm):
         bpm = max(0, min(bpm, self.max_bpm))
-        logging.info('CHANGE BPM to %d', bpm)
         self.state.set_bpm(bpm)
+
+        logging.info(
+            'CHANGE BPM PATTERN:%d BPM:%d',
+            self.current_pattern + 1, self.current_bpm)
 
     def is_in_bpm_mode(self):
         elapsed_time = time.time() - self.change_mode_start if self.change_mode_start else 0
