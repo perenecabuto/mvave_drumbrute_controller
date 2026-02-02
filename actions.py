@@ -1,0 +1,62 @@
+import time
+import logging
+
+from controller import DrumbruteController
+from state_store import StateStore
+from midi_clock import MidiClock
+
+
+class BehaviorController():
+
+    def __init__(
+        self,
+        drumbrute: DrumbruteController,
+        state_store: StateStore,
+        midi_clock: MidiClock,
+        max_bpm: int = 300,
+    ):
+        self.drumbrute = drumbrute
+        self.state_store = state_store
+        self.midi_clock = midi_clock
+        self.max_bpm = max_bpm
+
+        self.change_mode_start = None
+
+    def null_behaviour(self, midi_out, midi_msg, delta):
+        pass
+
+    def previous_pattern_behaviour(self, midi_out, midi_msg, delta):
+        self.chage_pattern(midi_out, self.state_store.pattern - 1)
+
+    def next_pattern_behaviour(self, midi_out, midi_msg, delta):
+        self.chage_pattern(midi_out, self.state_store.pattern + 1)
+
+    def toggle_play_behaviour(self, midi_out, midi_msg, delta):
+        playing = not self.state_store.playing
+        if playing:
+            self.drumbrute.play(midi_out)
+        else:
+            self.drumbrute.stop(midi_out)
+        self.state_store.set_playing(playing)
+        action = "PLAY" if playing else "STOP"
+        logging.info('%s PATTERN:%d BPM:%d', action, self.state_store.pattern + 1, self.state_store.bpm)
+
+    def increase_bpm_behaviour(self, midi_out, midi_msg, delta):
+        self.update_bpm(self.state_store.bpm + 1)
+
+    def decrease_bpm_behaviour(self, midi_out, midi_msg, delta):
+        self.update_bpm(self.state_store.bpm - 1)
+
+    def chage_pattern(self, midi_out, pattern_num: int):
+        pattern_num = min(max(0, pattern_num), self.drumbrute.max_patterns - 1)
+        if pattern_num == self.state_store.pattern:
+            return
+        self.drumbrute.change_pattern(midi_out, pattern_num)
+        self.state_store.set_pattern(pattern_num)
+        self.update_bpm(self.state_store.bpm)
+
+    def update_bpm(self, bpm: int):
+        bpm = max(0, min(bpm, self.max_bpm))
+        self.midi_clock.set_bpm(bpm)
+        self.state_store.set_bpm(bpm)
+        logging.info('CHANGE PATTERN:%s BPM:%d', self.state_store.pattern + 1, bpm)
