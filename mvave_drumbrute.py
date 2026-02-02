@@ -51,13 +51,17 @@ def main(
 
     midi_clock = MidiClock(get_bpm_fn=lambda: global_bpm.value)
 
-    clock_watcher = multiprocessing.Process(target=midi_clock.run, args=(midi_out, output_port))
-    midi_watcher = multiprocessing.Process(target=listener.run, args=(midi_in, input_port, midi_out, output_port))
+    clock_watcher = multiprocessing.Process(
+        target=midi_clock.run,
+        args=(midi_out, output_port))
+    midi_watcher = multiprocessing.Process(
+        target=listener.run,
+        args=(midi_in, input_port, midi_out, output_port))
 
     midi_watcher.start()
-    logging.info("Starting to send clock...")
+    logging.info("Starting MIDI listener...")
     clock_watcher.start()
-    logging.info("Starting MIDI message processing loop...")
+    logging.info("Starting MIDI clock...")
 
     while True:
         pass
