@@ -5,28 +5,47 @@ import multiprocessing
 from simple_term_menu import TerminalMenu
 import fire
 import rtmidi
+import sqlitedict
 
 from midi_clock import MidiClock
 from midi_listener import MidiInListener
 from controller import DrumbruteController
 
 
+DEFAULT_DB_FILE_PATH = 'mvave_drumbrute_state.db'
+
+
 def main(
     input_port: int | None = None,
     output_port: int | None = None,
+    db_file_path: str | None = DEFAULT_DB_FILE_PATH,
 ):
     midi_out = rtmidi.MidiOut()
     midi_in = rtmidi.MidiIn()
 
+    db = sqlitedict.SqliteDict(db_file_path, autocommit=True)
+
     available_inputs = midi_in.get_ports()
-    inputs_menu = TerminalMenu(available_inputs, title="Select midi input")
     if input_port is None:
+        input_port = db.get('input_port', None)
+        inputs_menu = TerminalMenu(
+            available_inputs,
+            cursor_index=input_port,
+            title="Select midi input")
         input_port = inputs_menu.show()
 
+    db['input_port'] = input_port
+
     available_outputs = midi_out.get_ports()
-    outputs_menu = TerminalMenu(available_outputs, title="Select midi output")
     if output_port is None:
+        output_port = db.get('output_port', None)
+        outputs_menu = TerminalMenu(
+            available_outputs,
+            cursor_index=output_port,
+            title="Select midi output")
         output_port = outputs_menu.show()
+
+    db['output_port'] = output_port
 
     logging.info(
         'Selected MIDI ports:\nINPUT %d (%s)\nOUTPUT %d (%s)\n',
