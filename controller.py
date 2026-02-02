@@ -13,8 +13,12 @@ class DrumbruteController():
         channel:int = 10,
         filter_play_event_fn=None,
         change_bpm_callback=None,
+        bpm:int = 120,
+        pattern_num:int = 0,
     ):
         self.channel = channel
+        self.current_bpm = bpm
+        self.current_pattern = pattern_num
 
         self.filter_play_event_fn = filter_play_event_fn \
             if filter_play_event_fn is not None \
@@ -26,23 +30,22 @@ class DrumbruteController():
 
         self.max_patterns = 16
         self.max_bpm = 300
-        self.current_pattern = 0
-        self.current_bpm = 120
         self.change_mode_threshold = 5
 
         self.playing = False
         self.change_mode_start = None
 
     def change_pattern(self, midi_out, pattern_num: int):
+        logging.info('CHANGE PATTERN to %d', pattern_num + 1)
         cmd = self.PC + (self.channel - 1)
         midi_out.send_message([cmd, 0, pattern_num])
         self.current_pattern = pattern_num
         logging.info('CHANGE PATTERN to %d', pattern_num + 1)
 
     def change_bpm(self, bpm):
+        logging.info('CHANGE BPM to %d', self.current_bpm)
         self.current_bpm = max(0, min(bpm, self.max_bpm))
         self.change_bpm_callback(self.current_bpm)
-        logging.info('CHANGE BPM to %d', self.current_bpm)
 
     def is_in_bpm_mode(self):
         elapsed_time = time.time() - self.change_mode_start if self.change_mode_start else 0
@@ -78,10 +81,10 @@ class DrumbruteController():
         self.playing = not(self.playing)
         if self.playing:
             midi_out.send_message([self.START, 255, 255])
-            logging.info(f'PLAY bpm=%d', self.current_bpm)
+            logging.info('PLAY')
         else:
             midi_out.send_message([self.STOP, 255, 255])
-            logging.info('PAUSE current_pattern=%d', self.current_pattern)
+            logging.info('PAUSE')
 
     def change_mode_behaviour(self, midi_out, midi_msg, delta):
         if not self.is_in_bpm_mode():
