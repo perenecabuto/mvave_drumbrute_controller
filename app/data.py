@@ -1,5 +1,7 @@
 import sqlitedict
 
+from devices.midi_clock import DEFAULT_BPM
+
 
 class StateStore():
 
@@ -39,7 +41,7 @@ class StateStore():
 
     @property
     def bpm(self):
-        return self.db.get(f'last_bpm_{self.pattern}', 120)
+        return self.db.get(f'last_bpm_{self.pattern}', DEFAULT_BPM)
 
     def set_playing(self, playing):
         self.db['playing'] = playing

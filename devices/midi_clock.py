@@ -4,13 +4,14 @@ from multiprocessing.synchronize import Event
 
 from devices.midi_connector import MidiInOutConnector
 
+DEFAULT_BPM = 120
+CLOCK_TICK_CMD = 0xF8
+
 
 class MidiClock():
-    CLOCK_TICK_CMD = 0xF8
-    DEFAULT_BPM = 120
 
     def __init__(self):
-        self._bpm = Value('i', self.DEFAULT_BPM)
+        self._bpm = Value('i', DEFAULT_BPM)
 
     @property
     def bpm(self):
@@ -29,7 +30,7 @@ class MidiClock():
 
         while not stop_event.is_set():
             pulse_rate = 60.0 / (self.bpm * 24)
-            midi_connector.send_message([self.CLOCK_TICK_CMD, 255, 255])
+            midi_connector.send_message([CLOCK_TICK_CMD, 255, 255])
             t1 = time.perf_counter()
             if self.bpm <= 3000:
                 time.sleep(pulse_rate * 0.8)
