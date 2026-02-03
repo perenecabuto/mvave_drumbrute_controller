@@ -61,6 +61,7 @@ def main(
 
     available_inputs = midi_connector.get_input_ports()
     available_outputs = midi_connector.get_output_ports()
+
     if not quiet:
         input_port = select_midi_port(
             available_inputs,
@@ -89,7 +90,6 @@ def main(
 
     clock = MidiClock()
     drumbrute = DrumbruteController()
-
     actions = BehaviorController(
         drumbrute,
         state_store,
@@ -99,12 +99,12 @@ def main(
 
     listener = MidiInListener(change_mode_threshold=3)
     listener.on_start(actions.on_start_behaviour)
-    # listener.on_event(lambda *args: logging.info(str(list(sqlitedict.SqliteDict(db_file_path).items()))))
+    listener.on_event(lambda msg, delta: logging.debug(
+        "MIDI IN: message:%s, delta:%0.000f}s", msg, delta))
     listener.add_play_behaviour(PEDAL_BUTTON_A_RELEASE, actions.null_behaviour)
     listener.add_play_behaviour(PEDAL_BUTTON_A_PRESS, actions.toggle_play_behaviour)
     listener.add_play_behaviour(PEDAL_BUTTON_B_PRESS, actions.previous_pattern_behaviour)
     listener.add_play_behaviour(PEDAL_BUTTON_C_RELEASE, actions.next_pattern_behaviour)
-    #
     listener.add_bpm_behaviour(PEDAL_BUTTON_A_PRESS, actions.increase_bpm_behaviour)
     listener.add_bpm_behaviour(PEDAL_BUTTON_B_PRESS, actions.decrease_bpm_behaviour)
 
