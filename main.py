@@ -1,8 +1,8 @@
 import os
 import logging
 
-from simple_term_menu import TerminalMenu
 import fire
+from simple_term_menu import TerminalMenu
 
 from app import mvave_drumbrute
 from app.data import StateStore
@@ -10,6 +10,18 @@ from devices import MidiInOutConnector
 
 
 DEFAULT_DB_FILE_PATH = '/tmp/mvave_drumbrute_state.db'
+
+
+def setup_logging():
+    if 'OUTPUT_FILE_PATH' in os.environ:
+        print("SET OUTPUT FILE PATH", os.environ['OUTPUT_FILE_PATH'])
+        logging.basicConfig(
+            level=os.environ.get('LOG_LEVEL', 'INFO'),
+            filename=os.environ['OUTPUT_FILE_PATH'],
+            filemode='a',
+        )
+    else:
+        logging.basicConfig(level=os.environ.get('LOG_LEVEL', 'INFO'))
 
 
 def select_midi_port(
@@ -89,14 +101,5 @@ def main(
 
 
 if __name__ == '__main__':
-    if 'OUTPUT_FILE_PATH' in os.environ:
-        print("SET OUTPUT FILE PATH", os.environ['OUTPUT_FILE_PATH'])
-        logging.basicConfig(
-            level=os.environ.get('LOG_LEVEL', 'INFO'),
-            filename=os.environ['OUTPUT_FILE_PATH'],
-            filemode='a',
-        )
-    else:
-        logging.basicConfig(level=os.environ.get('LOG_LEVEL', 'INFO'))
-
+    setup_logging()
     fire.Fire(main)
