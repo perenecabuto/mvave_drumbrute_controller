@@ -1,17 +1,15 @@
 import time
 import logging
 
-from controller import DrumbruteController
-from midi_connector import MidiInOutConnector
-from state_store import StateStore
-from midi_clock import MidiClock
+from devices import MidiInOutConnector, Drumbrute, MidiClock
+from app.data import StateStore
 
 
 class BehaviorController():
 
     def __init__(
         self,
-        drumbrute: DrumbruteController,
+        drumbrute: Drumbrute,
         state_store: StateStore,
         midi_clock: MidiClock,
         max_bpm: int = 300,

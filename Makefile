@@ -4,10 +4,10 @@ setup:
 	uv sync
 
 run:
-	uv run python mvave_drumbrute.py \
+	uv run python main.py \
 	--db-file-path=$(DB_FILE_PATH)
 
 run-quiet:
-	uv run python mvave_drumbrute.py \
+	uv run python main.py \
 	--quiet \
 	--db-file-path=$(DB_FILE_PATH)

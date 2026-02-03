@@ -2,7 +2,7 @@ import time
 from multiprocessing import Value
 from multiprocessing.synchronize import Event
 
-from midi_connector import MidiInOutConnector
+from devices.midi_connector import MidiInOutConnector
 
 
 class MidiClock():

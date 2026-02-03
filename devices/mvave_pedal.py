@@ -1,7 +1,7 @@
 import time
 import logging
 
-from midi_connector import MidiInOutConnector
+from devices.midi_connector import MidiInOutConnector
 
 
 PEDAL_BUTTON_A_PRESS = (201, 0)
@@ -11,7 +11,7 @@ PEDAL_BUTTON_C_PRESS = (153, 49)
 PEDAL_BUTTON_C_RELEASE = (153, 42)
 
 
-class MidiInListener():
+class MVavePedalListener():
 
     def __init__(
         self,
@@ -81,8 +81,7 @@ class MidiInListener():
         self.set_play_mode()
         return self._play_behaviours.get(midi_button_id, None)
 
-
-    def run(self, stop_event, midi_connector: MidiInOutConnector):
+    def listen(self, stop_event, midi_connector: MidiInOutConnector):
         midi_connector.open_ports()
 
         if self._on_start:

@@ -1,7 +1,7 @@
-from midi_connector import MidiInOutConnector
+from devices.midi_connector import MidiInOutConnector
 
 
-class DrumbruteController():
+class Drumbrute():
 
     PC = 0xC0
     START = 0xFA
