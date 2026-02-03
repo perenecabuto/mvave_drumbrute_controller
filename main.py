@@ -56,7 +56,12 @@ def main(
     state_store = StateStore(db_file_path)
 
     if auto_select:
+        if not input_query or not output_query:
+            raise ValueError("! Auto-select is enabled, but no query provided.")
+
         logging.info("Auto-selecting MIDI ports...")
+        if input_port is not None or output_port is not None:
+            logging.warning("! Input or output port provided, but auto-select is enabled. Ignoring it.")
         input_port = midi_connector.query_input_port(input_query)
         output_port = midi_connector.query_output_port(output_query)
     else:
