@@ -52,6 +52,9 @@ class BehaviorController():
     def decrease_bpm_behaviour(self, midi_connector: MidiInOutConnector, midi_msg, delta):
         self._update_bpm(self.state_store.bpm - 1)
 
+    def show_enter_bpm_behaviour(self, midi_connector: MidiInOutConnector, midi_msg, delta):
+        logging.info('BPM MODE ACTIVATED')
+
     def _change_pattern(self, midi_connector: MidiInOutConnector, pattern_num: int):
         pattern_num = min(max(0, pattern_num), self.drumbrute.max_patterns - 1)
         if pattern_num == self.state_store.pattern:

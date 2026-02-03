@@ -10,7 +10,8 @@ from state_store import StateStore
 from midi_clock import MidiClock
 from midi_connector import MidiInOutConnector
 from midi_listener import MidiInListener, \
-    PEDAL_BUTTON_A_PRESS, PEDAL_BUTTON_A_RELEASE, PEDAL_BUTTON_B_PRESS, PEDAL_BUTTON_C_RELEASE
+    PEDAL_BUTTON_A_PRESS, PEDAL_BUTTON_A_RELEASE, \
+    PEDAL_BUTTON_B_PRESS, PEDAL_BUTTON_C_PRESS, PEDAL_BUTTON_C_RELEASE
 from controller import DrumbruteController
 from actions import BehaviorController
 
@@ -97,7 +98,10 @@ def main(
         max_bpm=300,
     )
 
-    listener = MidiInListener(change_mode_threshold=3)
+    listener = MidiInListener(
+        change_mode_threshold=3,
+        change_mode_button=PEDAL_BUTTON_C_PRESS
+    )
     listener.on_start(actions.on_start_behaviour)
     listener.on_event(lambda msg, delta: logging.debug(
         "MIDI IN: message:%s, delta:%0.000f}s", msg, delta))
@@ -105,8 +109,10 @@ def main(
     listener.add_play_behaviour(PEDAL_BUTTON_A_PRESS, actions.toggle_play_behaviour)
     listener.add_play_behaviour(PEDAL_BUTTON_B_PRESS, actions.previous_pattern_behaviour)
     listener.add_play_behaviour(PEDAL_BUTTON_C_RELEASE, actions.next_pattern_behaviour)
-    listener.add_bpm_behaviour(PEDAL_BUTTON_A_PRESS, actions.increase_bpm_behaviour)
-    listener.add_bpm_behaviour(PEDAL_BUTTON_B_PRESS, actions.decrease_bpm_behaviour)
+    listener.add_bpm_behaviour(PEDAL_BUTTON_A_PRESS, actions.decrease_bpm_behaviour)
+    listener.add_bpm_behaviour(PEDAL_BUTTON_B_PRESS, actions.increase_bpm_behaviour)
+    listener.add_bpm_behaviour(PEDAL_BUTTON_C_RELEASE, actions.show_enter_bpm_behaviour)
+
 
     stop_event = multiprocessing.Event()
     clock_watcher = multiprocessing.Process(
