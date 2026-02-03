@@ -24,7 +24,7 @@ def setup_logging():
         logging.basicConfig(level=os.environ.get('LOG_LEVEL', 'INFO'))
 
 
-def select_midi_port(
+def select_midi_port_from_menu(
     available_ports: list[str],
     port: int | str | None,
     label: str = "midi",
@@ -69,14 +69,14 @@ def main(
     available_outputs = midi_connector.get_output_ports()
 
     if not quiet:
-        input_port = select_midi_port(
+        input_port = select_midi_port_from_menu(
             available_inputs,
             state_store.input_port if input_port is None else input_port,
             label="midi input",
         )
         state_store.set_input_port(input_port)
 
-        output_port = select_midi_port(
+        output_port = select_midi_port_from_menu(
             available_outputs,
             state_store.output_port if output_port is None else output_port,
             label="midi output",
