@@ -5,10 +5,10 @@ import time
 
 from simple_term_menu import TerminalMenu
 import fire
-import rtmidi
 
 from state_store import StateStore
 from midi_clock import MidiClock
+from midi_connector import MidiInOutConnector
 from midi_listener import MidiInListener, \
     PEDAL_BUTTON_A_PRESS, PEDAL_BUTTON_A_RELEASE, PEDAL_BUTTON_B_PRESS, PEDAL_BUTTON_C_RELEASE
 from controller import DrumbruteController
@@ -19,27 +19,32 @@ DEFAULT_DB_FILE_PATH = 'mvave_drumbrute_state.db'
 
 
 def select_midi_port(
-    midi: rtmidi.MidiIn | rtmidi.MidiOut,
+    available_ports: list[str],
     port: int | str | None,
-    name: str = "midi",
+    label: str = "midi",
+    query: str | None = None,
     quiet: bool = False,
 ) -> tuple[int, list[str]]:
-    available_ports = midi.get_ports()
-    if port is None:
-        try:
-            port = int(port)
-        except TypeError:
-            port = None
-        except ValueError:
-            port = None
+    if port >= len(available_ports):
+        port = 0
+    try:
+        port = int(port)
+    except:  # pylint: disable=bare-except
+        port = 0
+
+    if not port and query:
+        port = next((
+            i for i, port_name in enumerate(available_ports)
+            if query.lower() in port_name.lower()), 0)
+
     if not quiet:
         port = TerminalMenu(
             available_ports,
             cursor_index=port,
-            title=f'Select a {name} port'
+            title=f'Select a {label} port'
         ).show()
 
-    assert port is not None, f"could not select {name} port"
+    assert port is not None, f"could not select {label} port"
     return port, available_ports
 
 
@@ -49,22 +54,26 @@ def main(
     db_file_path: str | None = DEFAULT_DB_FILE_PATH,
     quiet: bool = False,
 ):
-    midi_out = rtmidi.MidiOut()
-    midi_in = rtmidi.MidiIn()
+    midi_connector = MidiInOutConnector(
+        input_port if input_port is not None else 0,
+        output_port if output_port is not None else 0,
+    )
     state_store = StateStore(db_file_path)
 
     input_port, available_inputs = select_midi_port(
-        midi_in,
+        midi_connector.get_input_ports(),
         state_store.input_port if input_port is None else input_port,
-        name="midi input",
+        label="midi input",
+        query='SINCO',
         quiet=quiet,
     )
     state_store.set_input_port(input_port)
 
     output_port, available_outputs = select_midi_port(
-        midi_out,
+        midi_connector.get_output_ports(),
         state_store.output_port if output_port is None else output_port,
-        name="midi output",
+        label="midi output",
+        query='Arturia',
         quiet=quiet,
     )
     state_store.set_output_port(output_port)
@@ -77,9 +86,7 @@ def main(
     )
 
     clock = MidiClock()
-    clock.set_bpm(state_store.bpm)
     drumbrute = DrumbruteController()
-    # drumbrute.change_pattern(midi_out, state_store.pattern)
 
     actions = BehaviorController(
         drumbrute,
@@ -89,6 +96,7 @@ def main(
     )
 
     listener = MidiInListener(change_mode_threshold=3)
+    listener.on_start(actions.on_start_behaviour)
     # listener.on_event(lambda *args: logging.info(str(list(sqlitedict.SqliteDict(db_file_path).items()))))
     listener.add_play_behaviour(PEDAL_BUTTON_A_RELEASE, actions.null_behaviour)
     listener.add_play_behaviour(PEDAL_BUTTON_A_PRESS, actions.toggle_play_behaviour)
@@ -99,13 +107,12 @@ def main(
     listener.add_bpm_behaviour(PEDAL_BUTTON_B_PRESS, actions.decrease_bpm_behaviour)
 
     stop_event = multiprocessing.Event()
-
     clock_watcher = multiprocessing.Process(
         target=clock.run,
-        args=(stop_event, midi_out, output_port))
+        args=(stop_event, midi_connector))
     midi_watcher = multiprocessing.Process(
         target=listener.run,
-        args=(stop_event, midi_in, input_port, midi_out, output_port))
+        args=(stop_event, midi_connector))
 
     midi_watcher.start()
     logging.info("Starting MIDI listener...")

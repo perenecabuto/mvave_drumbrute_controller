@@ -1,6 +1,8 @@
 import time
 import logging
 
+from midi_connector import MidiInOutConnector
+
 
 PEDAL_BUTTON_A_PRESS = (201, 0)
 PEDAL_BUTTON_A_RELEASE = (185, 0)
@@ -20,7 +22,9 @@ class MidiInListener():
         self.change_mode_button = change_mode_button
         self._play_behaviours = {}
         self._bpm_behaviours = {}
-        self._on_event = None
+
+        self._on_event = lambda *args: None
+        self._on_start = lambda midi_connector: None
         self._change_mode_start = None
 
     @property
@@ -39,18 +43,24 @@ class MidiInListener():
     def add_bpm_behaviour(self, in_code, callback):
         self._bpm_behaviours[in_code] = callback
 
+    def on_start(self, callback):
+        self._on_start = callback
+        return self
+
     def on_event(self, callback):
         self._on_event = callback
         return self
 
-    def run(self, stop_event, midi_in, input_port, midi_out, output_port):
-        midi_in.open_port(input_port)
-        midi_out.open_port(output_port)
+    def run(self, stop_event, midi_connector: MidiInOutConnector):
+        midi_connector.open_ports()
+
+        if self._on_start:
+            self._on_start(midi_connector)
 
         ignore_next = False
         last_message_time = time.time()
         while not stop_event.is_set():
-            message = midi_in.get_message()
+            message = midi_connector.get_input_message()
             if ignore_next:
                 ignore_next = False
                 continue
@@ -87,7 +97,7 @@ class MidiInListener():
                     behaviours = self._play_behaviours \
                         if not self.is_in_bpm_mode else self._bpm_behaviours
                     if map_key in behaviours:
-                        behaviours[map_key](midi_out, midi_msg, delta_seconds)
+                        behaviours[map_key](midi_connector, midi_msg, delta_seconds)
                     else:
                         logging.warning('Nothing found for %s', midi_msg)
                 except Exception:  # pylint: disable=broad-except
