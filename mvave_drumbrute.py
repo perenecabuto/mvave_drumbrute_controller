@@ -72,7 +72,9 @@ def main(
     )
 
     logging.info(
-        'LAST PATTERN:%d BPM:%d',
+        'Selected MIDI ports:\nINPUT %d (%s)\nOUTPUT %d (%s)\nLAST PATTERN:%d BPM:%d',
+        input_port, available_inputs[input_port],
+        output_port, available_outputs[output_port],
         state_store.pattern + 1, state_store.bpm
     )
 
