@@ -4,18 +4,13 @@ import multiprocessing
 import time
 
 from app.actions import BehaviorController
-from devices import MidiClock, Drumbrute, MVavePedalListener
-from devices import (
-    PEDAL_BUTTON_A_PRESS,
-    PEDAL_BUTTON_B_PRESS,
-    PEDAL_BUTTON_C_PRESS,
-    PEDAL_BUTTON_C_RELEASE
-)
+from app.data import StateStore
+from devices import MidiInOutConnector, MidiClock, Drumbrute, MVavePedalListener, PedalButton
 
 
 def run(
-    midi_connector,
-    state_store,
+    midi_connector: MidiInOutConnector,
+    state_store: StateStore,
 ):
     clock = MidiClock()
     drumbrute = Drumbrute()
@@ -28,17 +23,17 @@ def run(
 
     pedal = MVavePedalListener(
         change_mode_threshold=3,
-        change_mode_button=PEDAL_BUTTON_C_PRESS
+        change_mode_button=PedalButton.C_PRESS
     )
     pedal.on_start(actions.on_start_behaviour)
-    pedal.on_event(lambda msg, delta: logging.debug(
-        "MIDI IN: message:%s, delta:%0.000f}s", msg, delta))
-    pedal.add_play_behaviour(PEDAL_BUTTON_A_PRESS, actions.toggle_play_behaviour)
-    pedal.add_play_behaviour(PEDAL_BUTTON_B_PRESS, actions.previous_pattern_behaviour)
-    pedal.add_play_behaviour(PEDAL_BUTTON_C_RELEASE, actions.next_pattern_behaviour)
-    pedal.add_bpm_behaviour(PEDAL_BUTTON_A_PRESS, actions.decrease_bpm_behaviour)
-    pedal.add_bpm_behaviour(PEDAL_BUTTON_B_PRESS, actions.increase_bpm_behaviour)
-    pedal.add_bpm_behaviour(PEDAL_BUTTON_C_RELEASE, actions.show_enter_bpm_behaviour)
+    # pedal.on_event(lambda msg, delta: logging.debug(
+    #     "MIDI IN: message:%s, delta:%0.000f}s", msg, delta))
+    pedal.add_play_behaviour(PedalButton.A_PRESS, actions.toggle_play_behaviour)
+    pedal.add_play_behaviour(PedalButton.B_PRESS, actions.previous_pattern_behaviour)
+    pedal.add_play_behaviour(PedalButton.C_RELEASE, actions.next_pattern_behaviour)
+    pedal.add_bpm_behaviour(PedalButton.A_PRESS, actions.decrease_bpm_behaviour)
+    pedal.add_bpm_behaviour(PedalButton.B_PRESS, actions.increase_bpm_behaviour)
+    pedal.add_bpm_behaviour(PedalButton.C_RELEASE, actions.show_enter_bpm_behaviour)
 
     stop_event = multiprocessing.Event()
     clock_watcher = multiprocessing.Process(

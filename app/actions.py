@@ -1,4 +1,3 @@
-import time
 import logging
 
 from devices import MidiInOutConnector, Drumbrute, MidiClock
