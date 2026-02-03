@@ -106,10 +106,10 @@ class MidiInListener():
             time.sleep(0.001)
 
     def start_bpm_mode(self):
-        logging.info("ACTIVATE BPM MODE %s", self.change_mode_threshold)
+        logging.info("ACTIVATE BPM MODE (%d seconds)", self.change_mode_threshold)
         if not self._change_mode_start:
             self._change_mode_start = time.time()
 
     def set_play_mode(self):
-        logging.info("DEACTIVATE BPM MODE")
+        logging.debug("DEACTIVATE BPM MODE")
         self._change_mode_start = None
