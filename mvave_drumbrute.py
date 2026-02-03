@@ -115,7 +115,7 @@ def main(
     logging.info("Starting MIDI clock...")
 
     try:
-        while midi_watcher.is_alive() or clock_watcher.is_alive():
+        while midi_watcher.is_alive() and clock_watcher.is_alive():
             time.sleep(1)
     except KeyboardInterrupt:
         stop_event.set()
