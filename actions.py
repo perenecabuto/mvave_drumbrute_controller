@@ -23,9 +23,6 @@ class BehaviorController():
 
         self.change_mode_start = None
 
-    def null_behaviour(self, midi_connector: MidiInOutConnector, midi_msg, delta):
-        pass
-
     def on_start_behaviour(self, midi_connector: MidiInOutConnector):
         self.midi_clock.set_bpm(self.state_store.bpm)
         self.drumbrute.change_pattern(midi_connector, self.state_store.pattern)

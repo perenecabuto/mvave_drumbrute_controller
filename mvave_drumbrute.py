@@ -105,14 +105,12 @@ def main(
     listener.on_start(actions.on_start_behaviour)
     listener.on_event(lambda msg, delta: logging.debug(
         "MIDI IN: message:%s, delta:%0.000f}s", msg, delta))
-    listener.add_play_behaviour(PEDAL_BUTTON_A_RELEASE, actions.null_behaviour)
     listener.add_play_behaviour(PEDAL_BUTTON_A_PRESS, actions.toggle_play_behaviour)
     listener.add_play_behaviour(PEDAL_BUTTON_B_PRESS, actions.previous_pattern_behaviour)
     listener.add_play_behaviour(PEDAL_BUTTON_C_RELEASE, actions.next_pattern_behaviour)
     listener.add_bpm_behaviour(PEDAL_BUTTON_A_PRESS, actions.decrease_bpm_behaviour)
     listener.add_bpm_behaviour(PEDAL_BUTTON_B_PRESS, actions.increase_bpm_behaviour)
     listener.add_bpm_behaviour(PEDAL_BUTTON_C_RELEASE, actions.show_enter_bpm_behaviour)
-
 
     stop_event = multiprocessing.Event()
     clock_watcher = multiprocessing.Process(

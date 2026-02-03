@@ -12,11 +12,7 @@ class DrumbruteController():
         channel: int = 10,
     ):
         self.channel = channel
-
         self.max_patterns = 16
-        self.change_mode_threshold = 5
-
-        self.change_mode_start = None
 
     def change_pattern(self, midi_connector: MidiInOutConnector, pattern_num: int) -> int:
         cmd = self.PC + (self.channel - 1)
