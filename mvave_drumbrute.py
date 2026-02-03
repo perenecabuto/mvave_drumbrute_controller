@@ -23,6 +23,7 @@ def select_midi_port(
     midi: rtmidi.MidiIn | rtmidi.MidiOut,
     port: int | str | None,
     name: str = "midi",
+    quiet: bool = False,
 ) -> tuple[int, list[str]]:
     available_ports = midi.get_ports()
     if port is None:
@@ -33,6 +34,7 @@ def select_midi_port(
             port = None
         except ValueError:
             port = None
+    if not quiet:
         port = TerminalMenu(
             available_ports,
             cursor_index=port,
@@ -49,22 +51,24 @@ def main(
     input_port: int | None = None,
     output_port: int | None = None,
     db_file_path: str | None = DEFAULT_DB_FILE_PATH,
+    quiet: bool = False,
 ):
     midi_out = rtmidi.MidiOut()
     midi_in = rtmidi.MidiIn()
-
     state_store = StateStore(db_file_path)
 
     input_port, available_inputs = select_midi_port(
         state_store,
         midi_in, input_port,
         name="midi input",
+        quiet=quiet,
     )
 
     output_port, available_outputs = select_midi_port(
         state_store,
         midi_out, output_port,
         name="midi output",
+        quiet=quiet,
     )
 
     logging.info(
