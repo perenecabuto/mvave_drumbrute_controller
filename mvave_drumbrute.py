@@ -111,10 +111,10 @@ def main(
     stop_event = multiprocessing.Event()
     clock_watcher = multiprocessing.Process(
         target=clock.run,
-        args=(stop_event, midi_connector))
+        args=(stop_event, midi_connector.new()))
     midi_watcher = multiprocessing.Process(
         target=listener.run,
-        args=(stop_event, midi_connector))
+        args=(stop_event, midi_connector.new()))
 
     midi_watcher.start()
     logging.info("Starting MIDI listener...")

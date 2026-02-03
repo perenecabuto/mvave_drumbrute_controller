@@ -60,3 +60,6 @@ class MidiInOutConnector:
         return next((
             i for i, port_name in enumerate(available_ports)
             if query.lower() in port_name.lower()), None)
+
+    def new(self):
+        return MidiInOutConnector(self._input_port, self._output_port)
