@@ -22,30 +22,19 @@ def select_midi_port(
     available_ports: list[str],
     port: int | str | None,
     label: str = "midi",
-    query: str | None = None,
-    quiet: bool = False,
 ) -> tuple[int, list[str]]:
-    if port >= len(available_ports):
+    if port is not None and port >= len(available_ports):
         port = 0
     try:
         port = int(port)
     except:  # pylint: disable=bare-except
         port = 0
 
-    if not port and query:
-        port = next((
-            i for i, port_name in enumerate(available_ports)
-            if query.lower() in port_name.lower()), 0)
-
-    if not quiet:
-        port = TerminalMenu(
-            available_ports,
-            cursor_index=port,
-            title=f'Select a {label} port'
-        ).show()
-
-    assert port is not None, f"could not select {label} port"
-    return port, available_ports
+    return TerminalMenu(
+        available_ports,
+        cursor_index=port,
+        title=f'Select a {label} port'
+    ).show()
 
 
 def main(
@@ -53,30 +42,43 @@ def main(
     output_port: int | None = None,
     db_file_path: str | None = DEFAULT_DB_FILE_PATH,
     quiet: bool = False,
+    auto_select: bool = False,
+    input_query: str | None = 'SINCO',
+    output_query: str | None = 'Arturia',
 ):
-    midi_connector = MidiInOutConnector(
-        input_port if input_port is not None else 0,
-        output_port if output_port is not None else 0,
-    )
+    midi_connector = MidiInOutConnector()
     state_store = StateStore(db_file_path)
 
-    input_port, available_inputs = select_midi_port(
-        midi_connector.get_input_ports(),
-        state_store.input_port if input_port is None else input_port,
-        label="midi input",
-        query='SINCO',
-        quiet=quiet,
-    )
-    state_store.set_input_port(input_port)
+    if auto_select:
+        logging.info("Auto-selecting MIDI ports...")
+        input_port = midi_connector.query_input_port(input_query)
+        output_port = midi_connector.query_output_port(output_query)
+    else:
+        if input_port is None and input_query is not None:
+            input_port = midi_connector.query_input_port(input_query)
+        if output_port is None and output_query is not None:
+            output_port = midi_connector.query_output_port(output_query)
 
-    output_port, available_outputs = select_midi_port(
-        midi_connector.get_output_ports(),
-        state_store.output_port if output_port is None else output_port,
-        label="midi output",
-        query='Arturia',
-        quiet=quiet,
-    )
-    state_store.set_output_port(output_port)
+    available_inputs = midi_connector.get_input_ports()
+    available_outputs = midi_connector.get_output_ports()
+    if not quiet:
+        input_port = select_midi_port(
+            available_inputs,
+            state_store.input_port if input_port is None else input_port,
+            label="midi input",
+        )
+        state_store.set_input_port(input_port)
+
+        output_port = select_midi_port(
+            available_outputs,
+            state_store.output_port if output_port is None else output_port,
+            label="midi output",
+        )
+        state_store.set_output_port(output_port)
+
+    assert input_port is not None, "Input port must be set"
+    assert output_port is not None, "Output port must be set"
+    midi_connector.set_ports(input_port, output_port)
 
     logging.info(
         'Selected MIDI ports:\nINPUT %d (%s)\nOUTPUT %d (%s)\nLAST PATTERN:%d BPM:%d',
