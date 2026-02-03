@@ -128,5 +128,14 @@ def main(
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=os.environ.get('LOG_LEVEL', 'INFO'))
+    if 'OUTPUT_FILE_PATH' in os.environ:
+        print("SET OUTPUT FILE PATH", os.environ['OUTPUT_FILE_PATH'])
+        logging.basicConfig(
+            level=os.environ.get('LOG_LEVEL', 'INFO'),
+            filename=os.environ['OUTPUT_FILE_PATH'],
+            filemode='a',
+        )
+    else:
+        logging.basicConfig(level=os.environ.get('LOG_LEVEL', 'INFO'))
+
     fire.Fire(main)
