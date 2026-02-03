@@ -19,7 +19,6 @@ DEFAULT_DB_FILE_PATH = 'mvave_drumbrute_state.db'
 
 
 def select_midi_port(
-    state_store: StateStore | None,
     midi: rtmidi.MidiIn | rtmidi.MidiOut,
     port: int | str | None,
     name: str = "midi",
@@ -27,7 +26,6 @@ def select_midi_port(
 ) -> tuple[int, list[str]]:
     available_ports = midi.get_ports()
     if port is None:
-        port = state_store.input_port
         try:
             port = int(port)
         except TypeError:
@@ -42,8 +40,6 @@ def select_midi_port(
         ).show()
 
     assert port is not None, f"could not select {name} port"
-    state_store.set_input_port(port)
-
     return port, available_ports
 
 
@@ -58,18 +54,20 @@ def main(
     state_store = StateStore(db_file_path)
 
     input_port, available_inputs = select_midi_port(
-        state_store,
-        midi_in, input_port,
+        midi_in,
+        state_store.input_port if input_port is None else input_port,
         name="midi input",
         quiet=quiet,
     )
+    state_store.set_input_port(input_port)
 
     output_port, available_outputs = select_midi_port(
-        state_store,
-        midi_out, output_port,
+        midi_out,
+        state_store.output_port if output_port is None else output_port,
         name="midi output",
         quiet=quiet,
     )
+    state_store.set_output_port(output_port)
 
     logging.info(
         'Selected MIDI ports:\nINPUT %d (%s)\nOUTPUT %d (%s)\nLAST PATTERN:%d BPM:%d',
