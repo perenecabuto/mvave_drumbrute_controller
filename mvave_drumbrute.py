@@ -18,6 +18,33 @@ from actions import BehaviorController
 DEFAULT_DB_FILE_PATH = 'mvave_drumbrute_state.db'
 
 
+def select_midi_port(
+    state_store: StateStore | None,
+    midi: rtmidi.MidiIn | rtmidi.MidiOut,
+    port: int | str | None,
+    name: str = "midi",
+) -> tuple[int, list[str]]:
+    available_ports = midi.get_ports()
+    if port is None:
+        port = state_store.input_port
+        try:
+            port = int(port)
+        except TypeError:
+            port = None
+        except ValueError:
+            port = None
+        port = TerminalMenu(
+            available_ports,
+            cursor_index=port,
+            title=f'Select a {name} port'
+        ).show()
+
+    assert port is not None, f"could not select {name} port"
+    state_store.set_input_port(port)
+
+    return port, available_ports
+
+
 def main(
     input_port: int | None = None,
     output_port: int | None = None,
@@ -28,28 +55,16 @@ def main(
 
     state_store = StateStore(db_file_path)
 
-    available_inputs = midi_in.get_ports()
-    if input_port is None:
-        inputs_menu = TerminalMenu(
-            available_inputs,
-            cursor_index=state_store.input_port,
-            title="Select midi input")
-        input_port = inputs_menu.show()
-    state_store.set_input_port(input_port)
+    input_port, available_inputs = select_midi_port(
+        state_store,
+        midi_in, input_port,
+        name="midi input",
+    )
 
-    available_outputs = midi_out.get_ports()
-    if output_port is None:
-        outputs_menu = TerminalMenu(
-            available_outputs,
-            cursor_index=state_store.output_port,
-            title="Select midi output")
-        output_port = outputs_menu.show()
-    state_store.set_output_port(output_port)
-
-    logging.info(
-        'Selected MIDI ports:\nINPUT %d (%s)\nOUTPUT %d (%s)\n',
-        input_port, available_inputs[input_port],
-        output_port, available_outputs[output_port],
+    output_port, available_outputs = select_midi_port(
+        state_store,
+        midi_out, output_port,
+        name="midi output",
     )
 
     logging.info(
