@@ -98,7 +98,7 @@ class MVavePedalListener():
         while not stop_event.is_set():
             time.sleep(0.001)
 
-            midi_connector.reconnect_if_needed()
+            midi_connector.check_connection()
 
             message = midi_connector.get_input_message()
             if not message:

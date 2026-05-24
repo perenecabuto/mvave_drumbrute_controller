@@ -40,9 +40,9 @@ class MidiInOutConnector:
             self.midi_out.close_port()
         self.midi_out.open_port(self._output_port)
 
-    def reconnect_if_needed(self):
-        if not self.midi_in.is_port_open() or not self.midi_out.is_port_open():
-            self.open_ports()
+    def check_connection(self):
+        self.get_input_ports()
+        self.get_output_ports()
 
     def get_input_ports(self) -> list[str]:
         return self.midi_in.get_ports()
