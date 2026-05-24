@@ -26,7 +26,7 @@ def run(
         change_mode_button=PedalButton.C_PRESS
     )
     pedal.on_start(actions.on_start_behaviour)
-    # pedal.on_event(lambda msg, delta: logging.debug(
+    # pedal.on_event(lambda midi_connector, msg, delta: logging.debug(
     #     "MIDI IN: message:%s, delta:%0.000f}s", msg, delta))
     pedal.add_play_behaviour(PedalButton.A_PRESS, actions.toggle_play_behaviour)
     pedal.add_play_behaviour(PedalButton.B_PRESS, actions.previous_pattern_behaviour)

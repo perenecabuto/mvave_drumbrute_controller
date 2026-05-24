@@ -30,7 +30,7 @@ class MVavePedalListener():
         self._bpm_behaviours = {}
 
         self._on_event = lambda *args: None
-        self._on_start = lambda midi_connector: None
+        self._on_start = lambda midi_connector, midi_msg, delta: None
         self._change_mode_start = None
         self._skip_next_message = False
 
@@ -91,7 +91,7 @@ class MVavePedalListener():
         midi_connector.open_ports()
 
         if self._on_start:
-            self._on_start(midi_connector)
+            self._on_start(midi_connector, [], 0)
 
         last_message_time = time.time()
         while not stop_event.is_set():
@@ -108,7 +108,7 @@ class MVavePedalListener():
             last_message_time = _time
 
             if self._on_event:
-                self._on_event(message, delta_seconds)
+                self._on_event(midi_connector, message, delta_seconds)
 
             # (midi_msg, delta_seconds) = message
             (midi_msg, _) = message

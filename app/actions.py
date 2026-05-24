@@ -20,7 +20,7 @@ class BehaviorController():
 
         self.change_mode_start = None
 
-    def on_start_behaviour(self, midi_connector: MidiInOutConnector):
+    def on_start_behaviour(self, midi_connector: MidiInOutConnector, midi_msg, delta):
         self._change_pattern(midi_connector, self.state_store.pattern)
         self._update_bpm(self.state_store.bpm)
         if self.state_store.playing:
