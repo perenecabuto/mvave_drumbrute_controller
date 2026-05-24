@@ -18,6 +18,7 @@ Behavior = Callable[[MidiInOutConnector, list[int], float], None]
 
 
 class MVavePedalListener():
+    # pylint: disable=unused-argument
 
     def __init__(
         self,
@@ -30,7 +31,7 @@ class MVavePedalListener():
         self._bpm_behaviours = {}
 
         self._on_event = lambda *args: None
-        self._on_start = lambda midi_connector, midi_msg, delta: None
+        self._on_start = lambda *args: None
         self._change_mode_start = None
         self._skip_next_message = False
 

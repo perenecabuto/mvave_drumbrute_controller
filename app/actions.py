@@ -5,6 +5,7 @@ from app.data import StateStore
 
 
 class BehaviorController():
+    # pylint: disable=unused-argument
 
     def __init__(
         self,
