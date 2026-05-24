@@ -52,9 +52,10 @@ def run(
         while midi_watcher.is_alive() and clock_watcher.is_alive():
             time.sleep(1)
     except KeyboardInterrupt:
-        stop_event.set()
-        stop_event.set()
-        print("Main process: caught keyboard interrupt, terminating workers,")
+        print("Main process: caught keyboard interrupt, terminating workers")
+
+    stop_event.set()
+    stop_event.set()
 
     midi_watcher.join()  # Wait for the worker process to finish
     clock_watcher.join()  # Wait for the worker process to finish
