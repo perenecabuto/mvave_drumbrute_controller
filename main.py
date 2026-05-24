@@ -26,10 +26,10 @@ def setup_logging():
 
 def select_midi_port_from_menu(
     available_ports: list[str],
-    port: int | str | None,
+    port: int | None,
     label: str = "midi",
-) -> tuple[int, list[str]]:
-    if port is not None and port >= len(available_ports):
+) -> int:
+    if port is None or port >= len(available_ports):
         port = 0
     try:
         port = int(port)
@@ -40,7 +40,7 @@ def select_midi_port_from_menu(
         available_ports,
         cursor_index=port,
         title=f'Select a {label} port'
-    ).show()
+    ).show()  # type: ignore
 
 
 def main(
@@ -53,6 +53,8 @@ def main(
     output_query: str | None = 'Arturia',
 ):
     midi_connector = MidiInOutConnector()
+    if db_file_path is None:
+        raise ValueError("db_file_path must be set")
     state_store = StateStore(db_file_path)
 
     if auto_select:

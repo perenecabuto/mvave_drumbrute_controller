@@ -3,28 +3,30 @@ import rtmidi
 
 
 class MidiInOutConnector:
-    def __init__(self, input_port: int = None, output_port: int = None):
+    # pylint: disable=no-member
+
+    def __init__(self, input_port: int | None = None, output_port: int | None = None):
         self._input_port = input_port
         self._output_port = output_port
         self._midi_in = None
         self._midi_out = None
 
     @property
-    def midi_in(self) -> rtmidi.MidiIn:
+    def midi_in(self) -> rtmidi.MidiIn:  # pyright: ignore[reportAttributeAccessIssue]
         if not self._midi_in:
-            self._midi_in = rtmidi.MidiIn()
+            self._midi_in = rtmidi.MidiIn()  # pyright: ignore[reportAttributeAccessIssue]
         return self._midi_in
 
     @property
-    def midi_out(self) -> rtmidi.MidiOut:
+    def midi_out(self) -> rtmidi.MidiOut:  # pyright: ignore[reportAttributeAccessIssue]
         if not self._midi_out:
-            self._midi_out = rtmidi.MidiOut()
+            self._midi_out = rtmidi.MidiOut()  # pyright: ignore[reportAttributeAccessIssue]
         return self._midi_out
 
-    def query_input_port(self, query: str = None):
+    def query_input_port(self, query: str | None = None) -> int | None:
         return self._query_port(self.get_input_ports(), query)
 
-    def query_output_port(self, query: str = None):
+    def query_output_port(self, query: str | None = None) -> int | None:
         return self._query_port(self.get_output_ports(), query)
 
     def open_ports(self):
@@ -58,7 +60,7 @@ class MidiInOutConnector:
         self._input_port = input_port
         self._output_port = output_port
 
-    def _query_port(self, available_ports: list[str], query: str = None) -> int | None:
+    def _query_port(self, available_ports: list[str], query: str | None = None) -> int | None:
         if query is None:
             return None
         query = str(query).lower()
