@@ -1,0 +1,75 @@
+#!/bin/sh
+
+APP_DIR="/opt/mvave-drumbrute-controller"
+DB_FILE_PATH=$APP_HOME/.storage.db
+
+APP="python3 main.py --quiet --db-file-path=$DB_FILE_PATH"
+PIDFILE="/var/run/mvave.pid"
+
+
+start() {
+echo "Starting mvave-drumbrute-controller"
+
+(
+    cd "$APP_DIR"
+
+    while true
+    do
+        {
+            echo
+            echo "========================================"
+            echo " MVAVE Drumbrute Controller"
+            echo "========================================"
+            echo
+            echo "[$(date)] Starting application..."
+            echo
+
+            $APP
+
+            EXIT_CODE=$?
+
+            echo
+            echo "[$(date)] Application exited with code $EXIT_CODE"
+            echo "[$(date)] Restarting in 3 seconds..."
+            echo
+
+            sleep 3
+        } </dev/tty1 >/dev/tty1 2>&1
+
+    done
+) &
+
+echo $! > "$PIDFILE"
+}
+
+stop() {
+echo "Stopping mvave-drumbrute-controller"
+
+if [ -f "$PIDFILE" ]; then
+    kill "$(cat "$PIDFILE")" 2>/dev/null
+    rm -f "$PIDFILE"
+fi
+
+killall python3 2>/dev/null
+}
+
+case "$1" in
+start)
+start
+;;
+stop)
+stop
+;;
+restart)
+stop
+sleep 1
+start
+;;
+*)
+echo "Usage: $0 {start|stop|restart}"
+exit 1
+;;
+esac
+
+exit 0
+

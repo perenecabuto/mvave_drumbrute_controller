@@ -11,3 +11,9 @@ run-quiet:
 	uv run python src/main.py \
 	--quiet \
 	--db-file-path=$(DB_FILE_PATH)
+
+build-image:
+	cd embedded; make build
+
+flash-image: build-image
+	cd embedded; make flash

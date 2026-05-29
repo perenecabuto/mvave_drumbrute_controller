@@ -1,0 +1,6 @@
+menu "MVAVE packages"
+
+source "$BR2_EXTERNAL_MVAVE_PATH/package/python-rtmidi/Config.in"
+source "$BR2_EXTERNAL_MVAVE_PATH/package/mvave-drumbrute-controller/Config.in"
+
+endmenu
