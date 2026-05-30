@@ -3,7 +3,7 @@
 APP_DIR="/opt/mvave-drumbrute-controller"
 DB_FILE_PATH=$APP_HOME/.storage.db
 
-APP="python3 main.py --quiet --db-file-path=$DB_FILE_PATH"
+APP="chrt -f 50 python3 main.py --quiet --db-file-path=$DB_FILE_PATH"
 PIDFILE="/var/run/mvave.pid"
 
 

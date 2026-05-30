@@ -12,7 +12,7 @@ copy-source:
 	cd ..; \
 	rm -rf $(APP_ROOT); \
 	mkdir -p $(APP_ROOT); \
-	uv export --prune python-rtmidi > $(APP_ROOT)/requirements.txt; \
+	uv export --no-dev --prune python-rtmidi > $(APP_ROOT)/requirements.txt; \
 	cp -r src/* $(APP_ROOT)
 
 get-buildroot:
@@ -20,10 +20,22 @@ get-buildroot:
 	tar zxf $(BUILDROOT_TGZ)
 	#rm $(BUILDROOT_TGZ)
 
+
+#	--enable BR2_TARGET_ROOTFS_TAR \
+#	--enable BR2_TARGET_ROOTFS_EXT2_XZ \
+
 setup: copy-source get-buildroot
 	$(BUILDROOT_CMD) make --version
 	$(BUILDROOT_CMD) make raspberrypi_defconfig
-	$(BUILDROOT_CMD) ./utils/config --enable BR2_PACKAGE_MVAVE_DRUMBRUTE_CONTROLLER
+	$(BUILDROOT_CMD) ./utils/config \
+	--enable BR2_PACKAGE_MVAVE_DRUMBRUTE_CONTROLLER \
+	--enable BR2_PACKAGE_PYTHON3_PYC_ONLY \
+	--enable BR2_STRIP_strip \
+	--disable BR2_HAVE_DOCUMENTATION \
+	--enable BR2_ROOTFS_DEVICE_CREATION_DYNAMIC_DEVTMPFS \
+	--enable BR2_PACKAGE_KMOD \
+	--set-str BR2_ROOTFS_POST_IMAGE_SCRIPT \
+	"../br2-external/board/raspberrypi/post-image.sh"
 	$(BUILDROOT_CMD) make olddefconfig
 
 build: setup
