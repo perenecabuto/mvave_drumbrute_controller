@@ -43,6 +43,9 @@ def run(
         target=pedal.listen,
         args=(stop_event, midi_connector.new()))
 
+    logging.info("Force multiprocessing method to fork!")
+    multiprocessing.set_start_method("fork", force=True)
+
     midi_watcher.start()
     logging.info("Starting MIDI listener...")
     clock_watcher.start()

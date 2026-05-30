@@ -27,6 +27,7 @@ setup: copy-source get-buildroot
 	$(BUILDROOT_CMD) make olddefconfig
 
 build: setup
+	$(BUILDROOT_CMD) make mvave-drumbrute-controller-dirclean
 	$(BUILDROOT_CMD) make
 
 
