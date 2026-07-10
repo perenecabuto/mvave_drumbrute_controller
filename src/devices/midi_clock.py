@@ -10,8 +10,9 @@ CLOCK_TICK_CMD = 0xF8
 
 class MidiClock():
 
-    def __init__(self):
+    def __init__(self, compensation: int = 0):
         self._bpm = Value('i', DEFAULT_BPM)
+        self._compensation = compensation
 
     @property
     def bpm(self):
@@ -29,10 +30,11 @@ class MidiClock():
         midi_connector.open_ports()
 
         while not stop_event.is_set():
-            pulse_rate = 60.0 / (self.bpm * 24)
+            bpm = self.bpm + self._compensation
+            pulse_rate = 60.0 / (bpm * 24)
             midi_connector.send_message([CLOCK_TICK_CMD, 255, 255])
             t1 = time.perf_counter()
-            if self.bpm <= 3000:
+            if bpm <= 3000:
                 time.sleep(pulse_rate * 0.8)
             t2 = time.perf_counter()
             while not stop_event.is_set() and (t2 - t1) < pulse_rate:

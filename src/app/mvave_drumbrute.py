@@ -8,11 +8,14 @@ from app.data import StateStore
 from devices import MidiInOutConnector, MidiClock, Drumbrute, MVavePedalListener, PedalButton
 
 
+RPI1_BPLUS_COMPENSATION = 2
+
+
 def run(
     midi_connector: MidiInOutConnector,
     state_store: StateStore,
 ):
-    clock = MidiClock()
+    clock = MidiClock(compensation=RPI1_BPLUS_COMPENSATION)
     drumbrute = Drumbrute()
     actions = BehaviorController(
         drumbrute,
