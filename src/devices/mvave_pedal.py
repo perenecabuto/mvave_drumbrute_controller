@@ -14,7 +14,7 @@ class PedalButton(Enum):
     C_RELEASE = (153, 42)
 
 
-Behavior = Callable[[MidiInOutConnector, list[int], float], None]
+Behavior = Callable[[MidiInOutConnector, list[int], float, bool], None]
 
 
 class MVavePedalListener():
@@ -30,8 +30,8 @@ class MVavePedalListener():
         self._play_behaviours = {}
         self._bpm_behaviours = {}
 
-        self._on_event = lambda *args: None
-        self._on_start = lambda *args: None
+        self._on_event: Behavior = lambda *args: None
+        self._on_start: Behavior = lambda *args: None
         self._change_mode_start = None
         self._skip_next_message = False
 
@@ -73,7 +73,7 @@ class MVavePedalListener():
         self._skip_next_message = False
         return skip
 
-    def _get_behavior_for_button(self, pedal_btn: PedalButton):
+    def _get_behavior_for_button(self, pedal_btn: PedalButton) -> Behavior | None:
         if pedal_btn == self.change_mode_button:
             if not self.is_in_bpm_mode:
                 logging.info("ACTIVATE BPM MODE (%d seconds)", self.change_mode_threshold)
@@ -92,7 +92,7 @@ class MVavePedalListener():
         midi_connector.open_ports()
 
         if self._on_start:
-            self._on_start(midi_connector, [], 0)
+            self._on_start(midi_connector, [], 0, self.is_in_bpm_mode)
 
         last_message_time = time.time()
         while not stop_event.is_set():
@@ -111,7 +111,7 @@ class MVavePedalListener():
             last_message_time = _time
 
             if self._on_event:
-                self._on_event(midi_connector, message, delta_seconds)
+                self._on_event(midi_connector, message, delta_seconds, self.is_in_bpm_mode)
 
             # (midi_msg, delta_seconds) = message
             (midi_msg, _) = message
@@ -125,6 +125,6 @@ class MVavePedalListener():
                 continue
             behaviour_callback = self._get_behavior_for_button(midi_btn)
             if behaviour_callback:
-                behaviour_callback(midi_connector, midi_msg, delta_seconds)
+                behaviour_callback(midi_connector, midi_msg, delta_seconds, self.is_in_bpm_mode)
             else:
                 logging.debug('Nothing found for %s', midi_msg)

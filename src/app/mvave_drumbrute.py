@@ -36,7 +36,7 @@ def run(
     pedal.add_play_behaviour(PedalButton.C_RELEASE, actions.next_pattern_behaviour)
     pedal.add_bpm_behaviour(PedalButton.A_PRESS, actions.decrease_bpm_behaviour)
     pedal.add_bpm_behaviour(PedalButton.B_PRESS, actions.increase_bpm_behaviour)
-    pedal.add_bpm_behaviour(PedalButton.C_RELEASE, actions.show_enter_bpm_behaviour)
+    pedal.add_bpm_behaviour(PedalButton.C_RELEASE, actions.show_enter_bpm_mode_behaviour)
 
     stop_event = multiprocessing.Event()
     clock_watcher = multiprocessing.Process(
