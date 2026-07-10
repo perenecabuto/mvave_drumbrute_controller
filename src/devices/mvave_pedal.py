@@ -33,6 +33,7 @@ class MVavePedalListener():
         self._on_event: Behavior = lambda *args: None
         self._on_start: Behavior = lambda *args: None
         self._on_mode_change: Behavior = lambda *args: None
+        self._on_press_change_button: Callable[[], None] = lambda: None
         self._change_mode_start = None
         self._skip_next_message = False
 
@@ -73,6 +74,10 @@ class MVavePedalListener():
         self._on_mode_change = callback
         return self
 
+    def on_press_change_button(self, callback: Callable[[], None]):
+        self._on_press_change_button = callback
+        return self
+
     def _skip_message(self) -> bool:
         skip = bool(self._skip_next_message)
         self._skip_next_message = False
@@ -84,9 +89,11 @@ class MVavePedalListener():
                 behavior = lambda *args: self.start_bpm_mode()
             else:
                 behavior = lambda *args: self.set_play_mode(skip_next_message=True)
+
             return lambda *args: (
                 behavior(*args),
-                self._on_mode_change(*args[:-1], self.is_in_bpm_mode)
+                self._on_mode_change(*args[:-1], self.is_in_bpm_mode),
+                self._on_press_change_button()
             )  # type: ignore
 
         if self.is_in_bpm_mode:

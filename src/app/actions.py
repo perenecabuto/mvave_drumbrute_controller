@@ -39,6 +39,9 @@ class BehaviorController():
     def on_change_mode_behaviour(self, midi_connector: MidiInOutConnector, midi_msg, delta, is_bpm_mode: bool):
         self._print_status(is_bpm_mode=is_bpm_mode)
 
+    def on_press_change_mode_button_behaviour(self):
+        print("PRESSED CHANGE MODE BUTTON", flush=True)
+
     def previous_pattern_behaviour(self, midi_connector: MidiInOutConnector, midi_msg, delta, is_bpm_mode: bool):
         self._change_pattern(midi_connector, self.state_store.pattern - 1)
         self._update_bpm(self.state_store.bpm)
