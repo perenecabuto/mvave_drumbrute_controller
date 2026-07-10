@@ -1,4 +1,4 @@
-BUILDROOT_VERSION ?= 2026.02.2
+BUILDROOT_VERSION ?= 2026.05
 BUILDROOT_TGZ := buildroot-$(BUILDROOT_VERSION).tar.gz
 
 APP_ROOT := $(shell basename $(PWD))/src
