@@ -89,6 +89,7 @@ def main(
             label="midi output",
         )
         state_store.set_output_port(output_port)
+        state_store.commit()
 
     assert input_port is not None, "Input port must be set"
     assert output_port is not None, "Output port must be set"

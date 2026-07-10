@@ -12,8 +12,12 @@ class StateStore():
     @property
     def db(self):
         if self._db is None or self._db.conn is None or not self._db.conn.is_alive():
-            self._db = sqlitedict.SqliteDict(self._db_file_path, autocommit=True)
+            self._db = sqlitedict.SqliteDict(self._db_file_path, autocommit=False)
         return self._db
+
+    def commit(self):
+        if self._db is not None and self._db.conn is not None and self._db.conn.is_alive():
+            self._db.commit()
 
     def set_input_port(self, input_port: int):
         self.db['input_port'] = input_port
