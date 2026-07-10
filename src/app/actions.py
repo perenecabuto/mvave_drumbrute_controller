@@ -1,3 +1,5 @@
+from functools import cache
+
 from devices import MidiInOutConnector, Drumbrute, MidiClock
 from app.data import StateStore
 import pyfiglet
@@ -9,6 +11,11 @@ def commit(func):
         self.state_store.commit()
         return result
     return wrapper
+
+
+@cache
+def render(text, font):
+    return pyfiglet.figlet_format(text, font=font, width=80)
 
 
 class BehaviorController():
@@ -101,14 +108,11 @@ class BehaviorController():
         is_bpm_mode: bool,
         font: str = "ansi_shadow",
     ):
-        if is_bpm_mode:
-            label = "SET BPM"
-        else:
-            label = "PLAYING" if self.state_store.playing else "STOPPED"
-        pattern_text = f"PTRN:{self.state_store.pattern + 1:02d}"
         bpm_text = f"BPM:{self.state_store.bpm:03d}"
-
-        print("\033c", end="")  # Clear terminal
-        text = label + "\n" + pattern_text + " " + bpm_text
-        banner = pyfiglet.figlet_format(text, font=font, width=80)
-        print(banner)
+        pattern_text = f"PTRN:{self.state_store.pattern + 1:02d}"
+        label = "SET BPM" if is_bpm_mode \
+            else "PLAYING" if self.state_store.playing \
+            else "STOPPED"
+        text = f"{label}\n{pattern_text} {bpm_text}"
+        print("\033[H\033[J\n", end="")
+        print(render(text, font), flush=True)
