@@ -93,9 +93,10 @@ class BehaviorController():
     ):
         bpm_text = f"BPM:{self.state_store.bpm:03d}"
         pattern_text = f"PTRN:{self.state_store.pattern + 1:02d}"
+        bank_text = f"BNK:{self.state_store.pattern // self.drumbrute.max_patterns + 1:02d}"
         label = "SET BPM" if is_bpm_mode \
             else "PLAYING" if self.state_store.playing \
             else "STOPPED"
-        text = f"{label}\n{pattern_text} {bpm_text}"
+        text = f"{label}\n{bpm_text}\n{pattern_text}\n{bank_text}"
         print("\033[H\033[J\n", end="")
         print(render(text, font), flush=True)
