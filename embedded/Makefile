@@ -6,7 +6,7 @@ APP_ROOT := $(shell basename $(PWD))/src
 BUILDROOT_DIR := buildroot-$(BUILDROOT_VERSION)
 BUILDROOT_CMD := cd $(BUILDROOT_DIR) && BR2_EXTERNAL=../br2-external
 BUILDROOT_IMAGE := $(BUILDROOT_DIR)/output/images/sdcard.img
-
+BOOT_SIZE ?= 128M
 
 copy-source:
 	cd ..; \
@@ -20,13 +20,13 @@ get-buildroot:
 	tar zxf $(BUILDROOT_TGZ)
 	#rm $(BUILDROOT_TGZ)
 
-
 #	--enable BR2_TARGET_ROOTFS_TAR \
 #	--enable BR2_TARGET_ROOTFS_EXT2_XZ \
 
 setup: copy-source get-buildroot
 	$(BUILDROOT_CMD) make --version
 	$(BUILDROOT_CMD) make raspberrypi_defconfig
+
 	$(BUILDROOT_CMD) ./utils/config \
 	--enable BR2_PACKAGE_MVAVE_DRUMBRUTE_CONTROLLER \
 	--enable BR2_PACKAGE_PYTHON3_PYC_ONLY \
@@ -34,13 +34,26 @@ setup: copy-source get-buildroot
 	--disable BR2_HAVE_DOCUMENTATION \
 	--enable BR2_ROOTFS_DEVICE_CREATION_DYNAMIC_DEVTMPFS \
 	--enable BR2_PACKAGE_KMOD \
+	\
+	--enable BR2_PACKAGE_RPI_FIRMWARE \
+	--enable BR2_PACKAGE_RPI_FIRMWARE_INSTALL_DTBS \
+	--enable BR2_PACKAGE_RPI_FIRMWARE_INSTALL_DTB_OVERLAYS \
+	--enable BR2_PACKAGE_FB_TEST_APP \
+	--enable BR2_PACKAGE_SPI_TOOLS \
+	\
 	--set-str BR2_ROOTFS_POST_IMAGE_SCRIPT \
 	"../br2-external/board/raspberrypi/post-image.sh"
+
 	$(BUILDROOT_CMD) make olddefconfig
+
+	$(BUILDROOT_CMD) ./utils/config \
+	--enable BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES \
+	--set-str BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES "../br2-external/board/raspberrypi/linux-lcd.fragment"
+
 
 build: setup
 	$(BUILDROOT_CMD) make mvave-drumbrute-controller-dirclean
-	$(BUILDROOT_CMD) make
+	$(BUILDROOT_CMD) BOOT_SIZE=$(BOOT_SIZE) make
 
 
 
