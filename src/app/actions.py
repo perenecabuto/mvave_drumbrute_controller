@@ -5,14 +5,6 @@ from app.data import StateStore
 import pyfiglet
 
 
-def commit(func):
-    def wrapper(self, *args, **kwargs):
-        result = func(self, *args, **kwargs)
-        self.state_store.commit()
-        return result
-    return wrapper
-
-
 @cache
 def render(text, font):
     return pyfiglet.figlet_format(text, font=font, width=80)
@@ -35,7 +27,6 @@ class BehaviorController():
 
         self.change_mode_start = None
 
-    @commit
     def on_start_behaviour(self, midi_connector: MidiInOutConnector, midi_msg, delta, is_bpm_mode: bool):
         self._change_pattern(midi_connector, self.state_store.pattern)
         self._update_bpm(self.state_store.bpm)
@@ -45,23 +36,19 @@ class BehaviorController():
             self.drumbrute.stop(midi_connector)
         self._print_status(is_bpm_mode=is_bpm_mode)
 
-    @commit
     def on_change_mode_behaviour(self, midi_connector: MidiInOutConnector, midi_msg, delta, is_bpm_mode: bool):
         self._print_status(is_bpm_mode=is_bpm_mode)
 
-    @commit
     def previous_pattern_behaviour(self, midi_connector: MidiInOutConnector, midi_msg, delta, is_bpm_mode: bool):
         self._change_pattern(midi_connector, self.state_store.pattern - 1)
         self._update_bpm(self.state_store.bpm)
         self._print_status(is_bpm_mode=is_bpm_mode)
 
-    @commit
     def next_pattern_behaviour(self, midi_connector: MidiInOutConnector, midi_msg, delta, is_bpm_mode: bool):
         self._change_pattern(midi_connector, self.state_store.pattern + 1)
         self._update_bpm(self.state_store.bpm)
         self._print_status(is_bpm_mode=is_bpm_mode)
 
-    @commit
     def toggle_play_behaviour(self, midi_connector: MidiInOutConnector, midi_msg, delta, is_bpm_mode: bool):
         playing = not self.state_store.playing
         if playing:
@@ -71,12 +58,10 @@ class BehaviorController():
         self.state_store.set_playing(playing)
         self._print_status(is_bpm_mode=is_bpm_mode)
 
-    @commit
     def increase_bpm_behaviour(self, midi_connector: MidiInOutConnector, midi_msg, delta, is_bpm_mode: bool):
         self._update_bpm(self.state_store.bpm + 1)
         self._print_status(is_bpm_mode=is_bpm_mode)
 
-    @commit
     def decrease_bpm_behaviour(self, midi_connector: MidiInOutConnector, midi_msg, delta, is_bpm_mode: bool):
         self._update_bpm(self.state_store.bpm - 1)
         self._print_status(is_bpm_mode=is_bpm_mode)
@@ -92,8 +77,6 @@ class BehaviorController():
         self.drumbrute.change_bank(midi_connector, drumbrute_bank)
         self.drumbrute.change_pattern(midi_connector, drumbrute_pattern)
         self.state_store.set_pattern(pattern_num)
-        if self.state_store.playing:
-            self.drumbrute.play(midi_connector)
 
     def _update_bpm(self, bpm: int):
         bpm = max(0, min(bpm, self.max_bpm))
