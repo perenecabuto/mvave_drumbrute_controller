@@ -29,6 +29,9 @@ class BehaviorController():
             self.drumbrute.stop(midi_connector)
         self._print_status(is_bpm_mode=is_bpm_mode)
 
+    def on_change_mode_behaviour(self, midi_connector: MidiInOutConnector, midi_msg, delta, is_bpm_mode: bool):
+        self._print_status(is_bpm_mode=is_bpm_mode)
+
     def previous_pattern_behaviour(self, midi_connector: MidiInOutConnector, midi_msg, delta, is_bpm_mode: bool):
         self._change_pattern(midi_connector, self.state_store.pattern - 1)
         self._update_bpm(self.state_store.bpm)
@@ -58,7 +61,6 @@ class BehaviorController():
 
     def show_enter_bpm_mode_behaviour(self, midi_connector: MidiInOutConnector, midi_msg, delta, is_bpm_mode: bool):
         self._print_status(is_bpm_mode=is_bpm_mode)
-
 
     def _change_pattern(self, midi_connector: MidiInOutConnector, pattern_num: int):
         pattern_num = max(0, min(pattern_num, self._max_pattern_num() - 1))

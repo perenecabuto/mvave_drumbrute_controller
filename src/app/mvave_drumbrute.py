@@ -31,6 +31,7 @@ def run(
     pedal.on_start(actions.on_start_behaviour)
     # pedal.on_event(lambda midi_connector, msg, delta: logging.debug(
     #     "MIDI IN: message:%s, delta:%0.000f}s", msg, delta))
+    pedal.on_change_mode(actions.on_change_mode_behaviour)
     pedal.add_play_behaviour(PedalButton.A_PRESS, actions.toggle_play_behaviour)
     pedal.add_play_behaviour(PedalButton.B_PRESS, actions.previous_pattern_behaviour)
     pedal.add_play_behaviour(PedalButton.C_RELEASE, actions.next_pattern_behaviour)
