@@ -31,7 +31,6 @@ setup: copy-source get-buildroot
 	--enable BR2_PACKAGE_MVAVE_DRUMBRUTE_CONTROLLER \
 	--enable BR2_PACKAGE_PYTHON3_PYC_ONLY \
 	--enable BR2_STRIP_strip \
-	--disable BR2_HAVE_DOCUMENTATION \
 	--enable BR2_ROOTFS_DEVICE_CREATION_DYNAMIC_DEVTMPFS \
 	--enable BR2_PACKAGE_KMOD \
 	\
@@ -40,6 +39,13 @@ setup: copy-source get-buildroot
 	--enable BR2_PACKAGE_RPI_FIRMWARE_INSTALL_DTB_OVERLAYS \
 	--enable BR2_PACKAGE_FB_TEST_APP \
 	--enable BR2_PACKAGE_SPI_TOOLS \
+	\
+	--disable BR2_HAVE_DOCUMENTATION \
+	--disable BR2_PACKAGE_DROPBEAR \
+	--disable BR2_PACKAGE_OPENSSH \
+	--disable BR2_PACKAGE_WPA_SUPPLICANT \
+	--disable BR2_PACKAGE_AVAHI \
+	--disable BR2_PACKAGE_BLUEZ5_UTILS \
 	\
 	--set-str BR2_ROOTFS_POST_IMAGE_SCRIPT \
 	"../br2-external/board/raspberrypi/post-image.sh"
