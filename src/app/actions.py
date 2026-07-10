@@ -70,6 +70,8 @@ class BehaviorController():
         self.drumbrute.change_bank(midi_connector, drumbrute_bank)
         self.drumbrute.change_pattern(midi_connector, drumbrute_pattern)
         self.state_store.set_pattern(pattern_num)
+        if self.state_store.playing:
+            self.drumbrute.play(midi_connector)
 
     def _update_bpm(self, bpm: int):
         bpm = max(0, min(bpm, self.max_bpm))
