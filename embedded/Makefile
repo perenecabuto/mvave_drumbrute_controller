@@ -39,6 +39,7 @@ setup: copy-source get-buildroot
 	--enable BR2_PACKAGE_RPI_FIRMWARE_INSTALL_DTB_OVERLAYS \
 	--enable BR2_PACKAGE_FB_TEST_APP \
 	--enable BR2_PACKAGE_SPI_TOOLS \
+	--enable BR2_PACKAGE_GDBM \
 	\
 	--disable BR2_HAVE_DOCUMENTATION \
 	--disable BR2_PACKAGE_DROPBEAR \

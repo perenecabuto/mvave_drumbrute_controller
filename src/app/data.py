@@ -1,4 +1,4 @@
-import dbm
+import dbm.gnu
 from typing import Optional
 
 from devices.midi_clock import DEFAULT_BPM
@@ -6,7 +6,7 @@ from devices.midi_clock import DEFAULT_BPM
 
 class StateStore:
     def __init__(self, db_file_path: str):
-        self._db = dbm.open(db_file_path, "c")
+        self._db = dbm.gnu.open(db_file_path, "c")
 
     def close(self):
         self._db.close()
