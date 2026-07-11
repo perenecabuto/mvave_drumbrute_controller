@@ -25,7 +25,7 @@ EOF
 
 BOARD_DIR="$BINARIES_DIR/../../board/raspberrypi"
 CMD_LINE="$(cat ${BOARD_DIR}/cmdline.txt | grep 'root=')"
-CMD_LINE="${CMD_LINE} fbcon=map:10 fbcon=font:VGA8x8"
+CMD_LINE="${CMD_LINE} fbcon=map:10 fbcon=font:VGA8x8 vt.global_cursor_default=0 loglevel=0"
 echo "$CMD_LINE" > "$BOOT_DIR/cmdline.txt"
 
 GENIMAGE_CFG="${BUILD_DIR}/genimage.cfg"
