@@ -8,11 +8,14 @@ from app.data import StateStore
 from devices import MidiInOutConnector, MidiClock, Drumbrute, MVavePedalListener, PedalButton
 
 
+RPI1_BPLUS_COMPENSATION = 2
+
+
 def run(
     midi_connector: MidiInOutConnector,
     state_store: StateStore,
 ):
-    clock = MidiClock()
+    clock = MidiClock(compensation=RPI1_BPLUS_COMPENSATION)
     drumbrute = Drumbrute()
     actions = BehaviorController(
         drumbrute,
@@ -26,6 +29,8 @@ def run(
         change_mode_button=PedalButton.C_PRESS
     )
     pedal.on_start(actions.on_start_behaviour)
+    pedal.on_change_mode(actions.on_change_mode_behaviour)
+    pedal.on_press_change_button(actions.on_press_change_mode_button_behaviour)
     # pedal.on_event(lambda midi_connector, msg, delta: logging.debug(
     #     "MIDI IN: message:%s, delta:%0.000f}s", msg, delta))
     pedal.add_play_behaviour(PedalButton.A_PRESS, actions.toggle_play_behaviour)
@@ -33,7 +38,7 @@ def run(
     pedal.add_play_behaviour(PedalButton.C_RELEASE, actions.next_pattern_behaviour)
     pedal.add_bpm_behaviour(PedalButton.A_PRESS, actions.decrease_bpm_behaviour)
     pedal.add_bpm_behaviour(PedalButton.B_PRESS, actions.increase_bpm_behaviour)
-    pedal.add_bpm_behaviour(PedalButton.C_RELEASE, actions.show_enter_bpm_behaviour)
+    pedal.add_bpm_behaviour(PedalButton.C_RELEASE, actions.show_enter_bpm_mode_behaviour)
 
     stop_event = multiprocessing.Event()
     clock_watcher = multiprocessing.Process(

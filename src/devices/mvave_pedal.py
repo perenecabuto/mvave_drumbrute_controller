@@ -14,7 +14,7 @@ class PedalButton(Enum):
     C_RELEASE = (153, 42)
 
 
-Behavior = Callable[[MidiInOutConnector, list[int], float], None]
+Behavior = Callable[[MidiInOutConnector, list[int], float, bool], None]
 
 
 class MVavePedalListener():
@@ -30,8 +30,10 @@ class MVavePedalListener():
         self._play_behaviours = {}
         self._bpm_behaviours = {}
 
-        self._on_event = lambda *args: None
-        self._on_start = lambda *args: None
+        self._on_event: Behavior = lambda *args: None
+        self._on_start: Behavior = lambda *args: None
+        self._on_mode_change: Behavior = lambda *args: None
+        self._on_press_change_button: Callable[[], None] = lambda: None
         self._change_mode_start = None
         self._skip_next_message = False
 
@@ -68,19 +70,31 @@ class MVavePedalListener():
         self._on_event = callback
         return self
 
+    def on_change_mode(self, callback: Behavior):
+        self._on_mode_change = callback
+        return self
+
+    def on_press_change_button(self, callback: Callable[[], None]):
+        self._on_press_change_button = callback
+        return self
+
     def _skip_message(self) -> bool:
         skip = bool(self._skip_next_message)
         self._skip_next_message = False
         return skip
 
-    def _get_behavior_for_button(self, pedal_btn: PedalButton):
+    def _get_behavior_for_button(self, pedal_btn: PedalButton) -> Behavior | None:
         if pedal_btn == self.change_mode_button:
             if not self.is_in_bpm_mode:
-                logging.info("ACTIVATE BPM MODE (%d seconds)", self.change_mode_threshold)
-                return lambda *args: self.start_bpm_mode()
+                behavior = lambda *args: self.start_bpm_mode()
             else:
-                logging.info("TOGGLE BACK TO PLAY MODE")
-                return lambda *args: self.set_play_mode(skip_next_message=True)
+                behavior = lambda *args: self.set_play_mode(skip_next_message=True)
+
+            return lambda *args: (
+                behavior(*args),
+                self._on_mode_change(*args[:-1], self.is_in_bpm_mode),
+                self._on_press_change_button()
+            )  # type: ignore
 
         if self.is_in_bpm_mode:
             return self._bpm_behaviours.get(pedal_btn, None)
@@ -92,7 +106,7 @@ class MVavePedalListener():
         midi_connector.open_ports()
 
         if self._on_start:
-            self._on_start(midi_connector, [], 0)
+            self._on_start(midi_connector, [], 0, self.is_in_bpm_mode)
 
         last_message_time = time.time()
         while not stop_event.is_set():
@@ -111,7 +125,7 @@ class MVavePedalListener():
             last_message_time = _time
 
             if self._on_event:
-                self._on_event(midi_connector, message, delta_seconds)
+                self._on_event(midi_connector, message, delta_seconds, self.is_in_bpm_mode)
 
             # (midi_msg, delta_seconds) = message
             (midi_msg, _) = message
@@ -125,6 +139,6 @@ class MVavePedalListener():
                 continue
             behaviour_callback = self._get_behavior_for_button(midi_btn)
             if behaviour_callback:
-                behaviour_callback(midi_connector, midi_msg, delta_seconds)
+                behaviour_callback(midi_connector, midi_msg, delta_seconds, self.is_in_bpm_mode)
             else:
                 logging.debug('Nothing found for %s', midi_msg)
